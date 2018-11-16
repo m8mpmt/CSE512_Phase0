@@ -43,8 +43,7 @@ object SpatialQuery extends App {
     val pointDf = spark.read.format("com.databricks.spark.csv").option("delimiter", "\t").option("header", "false").load(arg1);
     pointDf.createOrReplaceTempView("point")
 
-    spark.udf.register("ST_Contains", ST_Contains(_, _))
-
+    spark.udf.register("ST_Contains", (rectangleString: String, pointString: String) => ST_Contains(rectangleString, pointString))
 
     val resultDf = spark.sql("select * from point where ST_Contains('" + arg2 + "',point._c0)")
     resultDf.show()
@@ -60,7 +59,7 @@ object SpatialQuery extends App {
     val rectangleDf = spark.read.format("com.databricks.spark.csv").option("delimiter", "\t").option("header", "false").load(arg2);
     rectangleDf.createOrReplaceTempView("rectangle")
 
-    spark.udf.register("ST_Contains", ST_Contains(_, _))
+    spark.udf.register("ST_Contains", (rectangleString: String, pointString: String) => ST_Contains(rectangleString, pointString))
 
     val resultDf = spark.sql("select * from rectangle,point where ST_Contains(rectangle._c0,point._c0)")
     resultDf.show()
@@ -73,7 +72,7 @@ object SpatialQuery extends App {
     val pointDf = spark.read.format("com.databricks.spark.csv").option("delimiter", "\t").option("header", "false").load(arg1);
     pointDf.createOrReplaceTempView("point")
 
-    spark.udf.register("ST_Within", ST_Within(_, _, _))
+    spark.udf.register("ST_Within", (pointString1: String, pointString2: String, distance: Double) => ST_Within(pointString1, pointString2, distance))
 
     val resultDf = spark.sql("select * from point where ST_Within(point._c0,'" + arg2 + "'," + arg3 + ")")
     resultDf.show()
@@ -89,8 +88,7 @@ object SpatialQuery extends App {
     val pointDf2 = spark.read.format("com.databricks.spark.csv").option("delimiter", "\t").option("header", "false").load(arg2);
     pointDf2.createOrReplaceTempView("point2")
 
-    spark.udf.register("ST_Within", ST_Within(_, _, _))
-
+    spark.udf.register("ST_Within", (pointString1: String, pointString2: String, distance: Double) => ST_Within(pointString1, pointString2, distance))
     val resultDf = spark.sql("select * from point1 p1, point2 p2 where ST_Within(p1._c0, p2._c0, " + arg3 + ")")
     resultDf.show()
 
